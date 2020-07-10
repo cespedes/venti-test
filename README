@@ -1,0 +1,49 @@
+* Directory back-up utility for venti (similar to "vac" and "tar"):
+  + files to store:
+    - data (actual bytes in a file)
+    - inode:
+      * mode
+      * uid
+      * gid
+      * atime
+      * mtime
+      * ctime
+      * size
+      * score for a file or directory
+    - directory (list of names and scores for inodes)
+    - root (backup name and date, and score for root inode)
+* Structure of a venti block:
+  + Score, Type, size, data.
+  + The score is the SHA1 of the data.
+* "type" is a byte.  Venti doesn't care what you use there, but there are
+  some predefined ones with this meaning (this is a convention among
+  clients; the server doesn't really care what you have in each block).
+  + VtRoot
+    - This is the entry point for a group of blocks. The VtRoot has
+      there fields:
+      - name      [128]byte
+      - type      [128]byte
+      - score     [20]byte // to a VtDir block
+      - blocksize uint32
+      - prev      [20]byte // last root block
+  + VtDir
+    - This is a list of several VtEntry.  Each VtEntry is 40 bytes:
+      - gen   uint32   // generation number
+      - psize uint16   // pointer block size.  Must be a multiple of 20 bytes (score size).
+      - dsize uint16   // data block size.  Should be a power of 2
+      - flags byte     // 
+      - _     [5]byte  // padding?
+      - size  uint48   // uint48 doesn't exist in Go; this is just 6 bytes in big-endian.
+      - score [20]byte //
+  + VtDir+1
+    - This is a list of several scores to VtDir
+  + VtDir+N
+    (2 <= N <= 7)
+    - This is a list of several scores to VtDir+(N-1)
+  + VtData
+    - This is just a bunch of bytes, with no predefined structure.
+  + VtData+1
+    - This is a list of several scores to VtData
+  + VtData+N
+    (2 <= N <= 7)
+    - This is a list of several scores to VtData+(N-1)

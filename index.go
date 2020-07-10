@@ -45,8 +45,14 @@ type Isect struct {
 	tabsize  uint32 // max. bytes in index config
 }
 
+func getU16(b *[]byte) uint16 {
+	r := binary.BigEndian.Uint16((*b)[:U16Size])
+	*b = (*b)[U16Size:]
+	return r
+}
+
 func getU32(b *[]byte) uint32 {
-	r := binary.BigEndian.Uint32((*b)[:4])
+	r := binary.BigEndian.Uint32((*b)[:U32Size])
 	*b = (*b)[U32Size:]
 	return r
 }
@@ -107,5 +113,20 @@ func ParseIsect(filename string) {
 	fmt.Printf("blocks = %d\n", isect.blocks)
 	fmt.Printf("start = %d\n", isect.start)
 	fmt.Printf("stop = %d\n", isect.stop)
-	fmt.Printf("bucketmagic = %d\n", isect.bucketmagic)
+	fmt.Printf("bucketmagic = 0x%08x\n", isect.bucketmagic)
+	var i uint32
+	for i = 0; i < isect.blocks; i++ {
+		// IBucket:
+		b1 := make([]byte, IBucketSize)
+		n, err := file.ReadAt(b1, int64(isect.blockbase+i*isect.blocksize))
+		if err != nil || n != IBucketSize {
+			panic(err)
+		}
+		len := getU16(&b1)
+		magic := getU32(&b1)
+		if isect.version == 2 && magic != isect.bucketmagic {
+			len = 0
+		}
+		fmt.Printf("bucket %d: %d entries\n", i, len)
+	}
 }
