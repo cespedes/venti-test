@@ -23,6 +23,12 @@ func p(score venti.Score) string {
 	}
 }
 
+func printIndent(indent int) {
+	for i := 0; i < 4*indent; i++ {
+		fmt.Print(" ")
+	}
+}
+
 func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error {
 	r, err := c.Read(typ, score, 4096)
 	_ = r
@@ -34,15 +40,35 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 		return err
 	}
 	r.Close()
-	for i := 0; i < indent; i++ {
-		fmt.Print(" ")
-	}
+	printIndent(indent)
 	fmt.Printf("%s ", p(score))
 	switch typ {
 	case venti.VtRoot:
 		fmt.Println("root")
 	case venti.VtData:
-		fmt.Printf("data n=%d\n", len(b))
+		size := len(b)
+		fmt.Printf("data n=%d\n", size)
+		i := 0
+		for i < size {
+			printIndent(indent + 1)
+			s := ""
+			for j := 0; j < 16; j++ {
+				if i < size {
+					fmt.Printf(" %02x", b[i])
+					if b[i] >= 32 && b[i] <= 126 {
+						s += string(b[i])
+					} else {
+						// s += "�"
+						// s += "_"
+						s += "…"
+					}
+				} else {
+					fmt.Print("   ")
+				}
+				i++
+			}
+			fmt.Printf("  %s\n", s)
+		}
 	case venti.VtDir:
 		if len(b)%40 != 0 {
 			return fmt.Errorf("wrong size for directory: %d", len(b))
