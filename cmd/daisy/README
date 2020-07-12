@@ -1,0 +1,67 @@
+NOTE: this is just an early design.  It does not work yet.
+
+daisy creates an archival copy of a file tree on Venti.
+Is very similar to vac; its main difference is that it stores
+numeric UID and GIDs instead of strings.
+
+It can be used to build a simple backup system.
+
+For each entry, It stores file mode, filename, uid, gid, size,
+mode and mtime (it does not store ctime or atime).
+
+* Structure:
+  + 1 VtRoot (as usual in Venti), pointing to a "Dir" record which
+    have several "Entries", one per file.
+  + Each regular file is stored in one VtData or VtData+N (same as vac).
+
+* Dir record
+  + Each entry in a "Dir" has these 40 bytes of data:
+    - flags (2 bytes)
+      . bits 0: type of entry
+        - 0: this is the last entry
+        - 1: this entry is continued by the next one
+      . bits 1..3: file type:
+        - 0 (-) regular file
+        - 1 (d) directory
+        - 2 (l) symlink
+        - 3 (b) block special
+        - 4 (c) char special
+        - 5 (p) named pipe
+        - 6 (s) socket
+      . bit 4..15: permissions (u+s, g+s, o+t, u+r, u+w, u+x, g+r, g+w, g+x, o+r, o+w, o+x)
+  + If this is a directory or a regular file, the next fields are:
+    |-----+-----+-----+-----------+---------------------+-----------------------------|
+    | Flg | UID | GID |   mtime   |   filename + size   |            score            |
+    |-----+-----+-----+-----------+---------------------+-----------------------------|
+    0  1  2  3  4  5  6  7  8  9 10        ...         20             ....           40
+    - The filename is 0-terminated. The rest of the "filename + size" field is the size.
+  + If this is a symlink:
+    |-----+-----+-----+-----------+---------------------------------------------------|
+    | Flg | UID | GID |   mtime   |      filename + destination link                  |
+    |-----+-----+-----+-----------+---------------------------------------------------|
+    0     2     4     6          10                    ...                           40
+  + If this is a block or char special:
+    |-----+-----+-----+-----------+---------------------------+-----------+-----------|
+    | Flg | UID | GID |   mtime   |         filename          |   major   |   minor   |
+    |-----+-----+-----+-----------+---------------------------+-----------+-----------|
+    0     2     4     6          10           ...            32          36          40
+  + If this is a named pipe or a socket:
+    |-----+-----+-----+-----------+---------------------------------------------------|
+    | Flg | UID | GID |   mtime   |                    filename                       |
+    |-----+-----+-----+-----------+---------------------------------------------------|
+    0     2     4     6          10                      ...                         40
+  + If this is the continuation of a directory or regular file:
+    |-----+-----+-----+---------------------------------------------------------------|
+    | Flg | UID | GID |                    filename + size                            |
+    |-----+-----+-----+---------------------------------------------------------------|
+    0     2     4     6                           ...                                40
+  + If this is the continuation of a block or char special, or a named pipe or a socket:
+    |-----+-----+-----+---------------------------------------------------------------|
+    | Flg | UID | GID |                    filename                                   |
+    |-----+-----+-----+---------------------------------------------------------------|
+    0     2     4     6                           ...                                40
+  + If this is the continuation of a symlink:
+    |-----+-----+-----+---------------------------------------------------------------|
+    | Flg | UID | GID |                    filename + destination link                |
+    |-----+-----+-----+---------------------------------------------------------------|
+    0     2     4     6                           ...                                40
