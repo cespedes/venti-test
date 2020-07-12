@@ -10,31 +10,6 @@ import (
 	"github.com/cespedes/venti"
 )
 
-const (
-        U8Size  = 1
-        U16Size = 2
-        U32Size = 4
-        U64Size = 8
-
-	VtMaxLumpSize = 65535
-
-        VtScoreSize = 20
-        VtEntrySize = 40
-
-        VtRootSize = 300
-        VtRootVersion = 2
-        vtRootVersionBig = 1<<15
-
-)
-
-type VtRoot struct {
-	Name      string
-	Type      string
-	Score     venti.Score
-	BlockSize uint16
-	PrevScore venti.Score
-}
-
 func p(score venti.Score) string {
 	switch len(score) {
 	case 0:
@@ -56,6 +31,12 @@ func printIndent(indent int) {
 	}
 }
 
+func getU8(b *[]byte) uint8 {
+	r := (*b)[0]
+	*b = (*b)[1:]
+	return r
+}
+
 func getU16(b *[]byte) uint16 {
 	r := binary.BigEndian.Uint16((*b)[:U16Size])
 	*b = (*b)[U16Size:]
@@ -65,6 +46,14 @@ func getU16(b *[]byte) uint16 {
 func getU32(b *[]byte) uint32 {
 	r := binary.BigEndian.Uint32((*b)[:U32Size])
 	*b = (*b)[U32Size:]
+	return r
+}
+
+func getU48(b *[]byte) uint64 {
+	c := make([]byte, 8)
+	copy(c[2:8], *b)
+	r := binary.BigEndian.Uint64(c)
+	*b = (*b)[U48Size:]
 	return r
 }
 
@@ -101,16 +90,18 @@ func vtRootUnpack(b []byte) (*VtRoot, error) {
 }
 
 func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error {
-	r, err := c.Read(typ, score, VtMaxLumpSize)
-	_ = r
-	if err != nil {
-		return err
+	var b []byte
+	if !bytes.Equal([]byte(score), []byte(vtzeroscore)) {
+		r, err := c.Read(typ, score, VtMaxLumpSize)
+			if err != nil {
+				return err
+			}
+		b, err = ioutil.ReadAll(r)
+			if err != nil {
+				return err
+			}
+		r.Close()
 	}
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return err
-	}
-	r.Close()
 	printIndent(indent)
 	fmt.Printf("%s ", p(score))
 	switch {
@@ -123,6 +114,26 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 		err = dump(c, indent+1, root.Score, venti.VtDir)
 		if err != nil {
 			return err
+		}
+	case typ == venti.VtDir:
+		size := len(b)
+		if size % VtEntrySize != 0 {
+			return fmt.Errorf("wrong size for directory: %d", size)
+		}
+		size /= VtEntrySize
+		fmt.Printf("dir n=%d\n", size)
+		for i := 0; i < size; i++ {
+			entry, err := vtEntryUnpack(b[i*VtEntrySize:])
+			if err != nil {
+				panic(err)
+			}
+			printIndent(indent+1)
+			fmt.Printf("%d: gen=%d psize=%d dsize=%d type=%d flags=0x%02x size=%d score=%s\n", i,
+				entry.Gen, entry.PSize, entry.DSize, entry.Type, entry.Flags, entry.Size, p(entry.Score))
+			err = dump(c, indent+2, entry.Score, entry.Type)
+			if err != nil {
+				return err
+			}
 		}
 	case typ == venti.VtData:
 		size := len(b)
@@ -161,13 +172,6 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 				return err
 			}
 		}
-	case typ == venti.VtDir:
-		size := len(b)
-		if size % 40 != 0 {
-			return fmt.Errorf("wrong size for directory: %d", size)
-		}
-		size /= 40
-		fmt.Printf("dir n=%d\n", size)
 	case typ > venti.VtDir && typ < venti.VtRoot:
 		size := len(b)
 		if size % 20 != 0 {
