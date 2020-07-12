@@ -2,8 +2,7 @@
   + Score, Type, size, data.
   + The score is the SHA1 of the data.
 * "type" is a byte.  Venti doesn't care what you use there, but there are
-  some predefined ones with this meaning (this is a convention among
-  clients; the server doesn't really care what you have in each block).
+  some predefined ones with this meaning (convention among clients):
   + VtRoot
     - This is the entry point for a group of blocks. The VtRoot has
       there fields:

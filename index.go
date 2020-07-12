@@ -1,34 +1,9 @@
 package ventiutils
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"os"
 )
-
-func getU16(b *[]byte) uint16 {
-	r := binary.BigEndian.Uint16((*b)[:U16Size])
-	*b = (*b)[U16Size:]
-	return r
-}
-
-func getU32(b *[]byte) uint32 {
-	r := binary.BigEndian.Uint32((*b)[:U32Size])
-	*b = (*b)[U32Size:]
-	return r
-}
-
-func getString(b *[]byte) string {
-	var r string
-	if c := bytes.IndexByte((*b)[:ANameSize], 0); c >= 0 {
-		r = string((*b)[:c])
-	} else {
-		r = string((*b)[:ANameSize])
-	}
-	*b = (*b)[ANameSize:]
-	return r
-}
 
 // u64log2 returns floor(log2(v))
 func u64log2(v uint64) int {
@@ -56,8 +31,8 @@ func ParseIsect(filename string) {
 	}
 	var isect Isect
 	isect.version = getU32(&b)
-	isect.name = getString(&b)
-	isect.index = getString(&b)
+	isect.name = getString(&b, ANameSize)
+	isect.index = getString(&b, ANameSize)
 	isect.blocksize = getU32(&b)
 	isect.blockbase = getU32(&b)
 	isect.blocks = getU32(&b)
