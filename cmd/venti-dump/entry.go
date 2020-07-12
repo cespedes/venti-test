@@ -1,6 +1,7 @@
 package main
 
 import (
+	utils "github.com/cespedes/venti-utils"
 	"github.com/cespedes/venti"
 )
 
@@ -14,8 +15,8 @@ const (
 	vtEntryNoArchive = 1<<7		// for local storage only
 )
 
-func vtEntryUnpack(b []byte) (*VtEntry, error) {
-	entry := new(VtEntry)
+func vtEntryUnpack(b []byte) (*utils.VtEntry, error) {
+	entry := new(utils.VtEntry)
 
 	entry.Gen = getU32(&b)
 	entry.PSize = getU16(&b)

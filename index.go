@@ -1,4 +1,4 @@
-package venti
+package ventiutils
 
 import (
 	"bytes"
@@ -6,44 +6,6 @@ import (
 	"fmt"
 	"os"
 )
-
-// Useful constants:
-const (
-	VtScoreSize = 20
-
-	U8Size  = 1
-	U16Size = 2
-	U32Size = 4
-	U64Size = 8
-
-	IBucketSize = U32Size + U16Size
-	IEntrySize  = U64Size + U32Size + 2*U16Size + 2*U8Size + VtScoreSize
-
-	PartBlank  = 256 * 1024 // untouched section at beginning of partition
-	ANameSize  = 64         // maximum length for names
-	HeadSize   = 512        // size of a header after PartBlank
-	IsectMagic = 0xd15c5ec7 // magic number in isects, at the beginning of header
-)
-
-type Isect struct {
-
-	// Fields stored on disk:
-	version     uint32
-	name        string // text label
-	index       string // index owning the section
-	blocksize   uint32 // size of hash buckets in index
-	blockbase   uint32 // address of start of on disk index table
-	blocks      uint32 // total blocks on disk; some may be unused
-	start       uint32 // first bucket in this section
-	stop        uint32 // limit of buckets in this section
-	bucketmagic uint32
-
-	// Computed values:
-	blocklog int    // log2(blocksize)
-	buckmax  int    // max. entries in a index bucket
-	tabbase  uint32 // base address of index config table on disk
-	tabsize  uint32 // max. bytes in index config
-}
 
 func getU16(b *[]byte) uint16 {
 	r := binary.BigEndian.Uint16((*b)[:U16Size])

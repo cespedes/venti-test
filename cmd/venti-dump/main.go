@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/cespedes/venti"
+	utils "github.com/cespedes/venti-utils"
 )
 
 func p(score venti.Score) string {
@@ -38,14 +39,14 @@ func getU8(b *[]byte) uint8 {
 }
 
 func getU16(b *[]byte) uint16 {
-	r := binary.BigEndian.Uint16((*b)[:U16Size])
-	*b = (*b)[U16Size:]
+	r := binary.BigEndian.Uint16((*b)[:utils.U16Size])
+	*b = (*b)[utils.U16Size:]
 	return r
 }
 
 func getU32(b *[]byte) uint32 {
-	r := binary.BigEndian.Uint32((*b)[:U32Size])
-	*b = (*b)[U32Size:]
+	r := binary.BigEndian.Uint32((*b)[:utils.U32Size])
+	*b = (*b)[utils.U32Size:]
 	return r
 }
 
@@ -53,7 +54,7 @@ func getU48(b *[]byte) uint64 {
 	c := make([]byte, 8)
 	copy(c[2:8], *b)
 	r := binary.BigEndian.Uint64(c)
-	*b = (*b)[U48Size:]
+	*b = (*b)[utils.U48Size:]
 	return r
 }
 
@@ -69,17 +70,17 @@ func getString(b *[]byte, maxsize int) string {
 }
 
 func getScore(b *[]byte) venti.Score {
-	v := venti.Score((*b)[:VtScoreSize])
-	*b = (*b)[VtScoreSize:]
+	v := venti.Score((*b)[:utils.VtScoreSize])
+	*b = (*b)[utils.VtScoreSize:]
 	return v
 }
 
-func vtRootUnpack(b []byte) (*VtRoot, error) {
+func vtRootUnpack(b []byte) (*utils.VtRoot, error) {
 	vers := getU16(&b)
-	if vers != VtRootVersion {
+	if vers != utils.VtRootVersion {
 		return nil, fmt.Errorf("unknown root version")
 	}
-	root := new(VtRoot)
+	root := new(utils.VtRoot)
 
 	root.Name = getString(&b, 128)
 	root.Type = getString(&b, 128)
@@ -91,8 +92,8 @@ func vtRootUnpack(b []byte) (*VtRoot, error) {
 
 func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error {
 	var b []byte
-	if !bytes.Equal([]byte(score), []byte(vtzeroscore)) {
-		r, err := c.Read(typ, score, VtMaxLumpSize)
+	if !bytes.Equal([]byte(score), []byte(utils.VtZeroScore)) {
+		r, err := c.Read(typ, score, utils.VtMaxLumpSize)
 			if err != nil {
 				return err
 			}
@@ -117,13 +118,13 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 		}
 	case typ == venti.VtDir:
 		size := len(b)
-		if size % VtEntrySize != 0 {
+		if size % utils.VtEntrySize != 0 {
 			return fmt.Errorf("wrong size for directory: %d", size)
 		}
-		size /= VtEntrySize
+		size /= utils.VtEntrySize
 		fmt.Printf("dir n=%d\n", size)
 		for i := 0; i < size; i++ {
-			entry, err := vtEntryUnpack(b[i*VtEntrySize:])
+			entry, err := vtEntryUnpack(b[i*utils.VtEntrySize:])
 			if err != nil {
 				panic(err)
 			}

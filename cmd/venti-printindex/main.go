@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/cespedes/venti-test"
+	venti "github.com/cespedes/venti-utils"
 )
 
 func main() {
