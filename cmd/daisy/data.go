@@ -18,15 +18,15 @@ const (
 )
 
 type Entry struct {
-	Name string
-	Size uint64
-	Type int
-	Mode     uint32 // chmod-compatible
-	ModTime  time.Time
-	Score    venti.Score
+	Name    string
+	Size    uint64
+	Type    int
+	Mode    uint32 // chmod-compatible
+	ModTime time.Time
+	Score   venti.Score
 
-	UID      uint32 // only meaningful in UNIX-like systems
-	GID      uint32
-	DestLink string
+	UID          uint32 // only meaningful in UNIX-like systems
+	GID          uint32
+	DestLink     string
 	Major, Minor uint
 }

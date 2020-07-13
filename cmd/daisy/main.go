@@ -21,32 +21,32 @@ func FileToEntry(filename string) (Entry, error) {
 	mode := f.Mode()
 
 	switch {
-	case mode & os.ModeType == 0:
+	case mode&os.ModeType == 0:
 		e.Type = TypeRegular
-	case mode & os.ModeDir != 0:
+	case mode&os.ModeDir != 0:
 		e.Type = TypeDir
-	case mode & os.ModeSymlink != 0:
+	case mode&os.ModeSymlink != 0:
 		e.Type = TypeSymlink
-	case mode & (os.ModeDevice | os.ModeCharDevice) == os.ModeDevice:
+	case mode&(os.ModeDevice|os.ModeCharDevice) == os.ModeDevice:
 		e.Type = TypeBlock
-	case mode & (os.ModeDevice | os.ModeCharDevice) == os.ModeDevice | os.ModeCharDevice:
+	case mode&(os.ModeDevice|os.ModeCharDevice) == os.ModeDevice|os.ModeCharDevice:
 		e.Type = TypeChar
-	case mode & os.ModeNamedPipe == os.ModeNamedPipe:
+	case mode&os.ModeNamedPipe == os.ModeNamedPipe:
 		e.Type = TypeNamedPipe
-	case mode & os.ModeSocket == os.ModeSocket:
+	case mode&os.ModeSocket == os.ModeSocket:
 		e.Type = TypeSocket
 	default:
 		e.Type = TypeUnknown
 	}
 
 	e.Mode = (uint32)(mode & os.ModePerm)
-	if mode & os.ModeSetuid != 0 {
+	if mode&os.ModeSetuid != 0 {
 		e.Mode |= 0o4000
 	}
-	if mode & os.ModeSetgid != 0 {
+	if mode&os.ModeSetgid != 0 {
 		e.Mode |= 0o2000
 	}
-	if mode & os.ModeSticky != 0 {
+	if mode&os.ModeSticky != 0 {
 		e.Mode |= 0o1000
 	}
 

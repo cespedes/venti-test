@@ -35,13 +35,13 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 	var b []byte
 	if !bytes.Equal([]byte(score), []byte(utils.VtZeroScore)) {
 		r, err := c.Read(typ, score, utils.VtMaxLumpSize)
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
+		}
 		b, err = ioutil.ReadAll(r)
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
+		}
 		r.Close()
 	}
 	printIndent(indent)
@@ -59,7 +59,7 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 		}
 	case typ == venti.VtDir:
 		size := len(b)
-		if size % utils.VtEntrySize != 0 {
+		if size%utils.VtEntrySize != 0 {
 			return fmt.Errorf("wrong size for directory: %d", size)
 		}
 		size /= utils.VtEntrySize
@@ -69,7 +69,7 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 			if err != nil {
 				panic(err)
 			}
-			printIndent(indent+1)
+			printIndent(indent + 1)
 			fmt.Printf("%d: gen=%d psize=%d dsize=%d type=%d flags=0x%02x size=%d score=%s\n", i,
 				entry.Gen, entry.PSize, entry.DSize, entry.Type, entry.Flags, entry.Size, p(entry.Score))
 			err = dump(c, indent+2, entry.Score, entry.Type)
@@ -103,12 +103,12 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 		}
 	case typ > venti.VtData && typ < venti.VtDir:
 		size := len(b)
-		if size % 20 != 0 {
+		if size%20 != 0 {
 			return fmt.Errorf("wrong size for pointer to data: %d", size)
 		}
 		size /= 20
 		fmt.Printf("data+%d n=%d\n", typ-venti.VtData, size)
-		for i:=0; i<size; i++ {
+		for i := 0; i < size; i++ {
 			err := dump(c, indent+1, venti.Score(b[20*i:20*(i+1)]), typ-1)
 			if err != nil {
 				return err
@@ -116,12 +116,12 @@ func dump(c *venti.Client, indent int, score venti.Score, typ venti.Type) error 
 		}
 	case typ > venti.VtDir && typ < venti.VtRoot:
 		size := len(b)
-		if size % 20 != 0 {
+		if size%20 != 0 {
 			return fmt.Errorf("wrong size for pointer to dir: %d", size)
 		}
 		size /= 20
 		fmt.Printf("dir+%d n=%d\n", typ-venti.VtDir, size)
-		for i:=0; i<size; i++ {
+		for i := 0; i < size; i++ {
 			err := dump(c, indent+1, venti.Score(b[20*i:20*(i+1)]), typ-1)
 			if err != nil {
 				return err

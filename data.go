@@ -5,26 +5,26 @@ import (
 )
 
 var VtZeroScore = venti.Score{
-        0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55,
-        0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09,
+	0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55,
+	0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09,
 }
 
 // Useful constants:
 const (
-        U8Size  = 1
-        U16Size = 2
-        U32Size = 4
-        U48Size = 6
-        U64Size = 8
+	U8Size  = 1
+	U16Size = 2
+	U32Size = 4
+	U48Size = 6
+	U64Size = 8
 
 	VtMaxLumpSize = 65535
 
-        VtScoreSize = 20
-        VtEntrySize = 40
+	VtScoreSize = 20
+	VtEntrySize = 40
 
-        VtRootSize = 300
-        VtRootVersion = 2
-        vtRootVersionBig = 1<<15
+	VtRootSize       = 300
+	VtRootVersion    = 2
+	vtRootVersionBig = 1 << 15
 
 	IBucketSize = U32Size + U16Size
 	IEntrySize  = U64Size + U32Size + 2*U16Size + 2*U8Size + VtScoreSize

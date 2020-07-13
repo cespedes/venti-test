@@ -1,4 +1,4 @@
-// +build !windows
+// +build !windows,!plan9
 
 package main
 
@@ -12,7 +12,7 @@ func SysFileToEntry(e *Entry, f os.FileInfo) {
 	if ok {
 		e.UID = stat.Uid
 		e.GID = stat.Gid
-		e.Major = uint(stat.Rdev/256)
-		e.Minor = uint(stat.Rdev%256)
+		e.Major = uint(stat.Rdev / 256)
+		e.Minor = uint(stat.Rdev % 256)
 	}
 }

@@ -3,13 +3,13 @@ package ventiutils
 import "github.com/cespedes/venti"
 
 const (
-	vtEntryActive = 1<<0		// entry is in use
-	_vtEntryDir = 1<<1		// a directory
-	_vtEntryDepthShift = 2		// shift for pointer depth
-	_vtEntryDepthMask = 7<<2	// mask for pointer depth
-	vtEntryLocal = 1<<5		// for local storage only
-	_vtEntryBig = 1<<6		// dsize and psize are encoded differently
-	vtEntryNoArchive = 1<<7		// for local storage only
+	vtEntryActive      = 1 << 0 // entry is in use
+	_vtEntryDir        = 1 << 1 // a directory
+	_vtEntryDepthShift = 2      // shift for pointer depth
+	_vtEntryDepthMask  = 7 << 2 // mask for pointer depth
+	vtEntryLocal       = 1 << 5 // for local storage only
+	_vtEntryBig        = 1 << 6 // dsize and psize are encoded differently
+	vtEntryNoArchive   = 1 << 7 // for local storage only
 )
 
 func VtEntryUnpack(b []byte) (*VtEntry, error) {
