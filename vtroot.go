@@ -1,6 +1,23 @@
 package ventiutils
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/cespedes/venti"
+)
+
+const (
+	VtRootSize       = 300
+	VtRootVersion    = 2
+	vtRootVersionBig = 1 << 15
+)
+
+type VtRoot struct {
+	Name      string
+	Type      string
+	Score     venti.Score
+	BlockSize uint16
+	PrevScore venti.Score
+}
 
 func VtRootUnpack(b []byte) (*VtRoot, error) {
 	vers := getU16(&b)

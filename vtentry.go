@@ -3,6 +3,8 @@ package ventiutils
 import "github.com/cespedes/venti"
 
 const (
+	VtEntrySize = 40
+
 	vtEntryActive      = 1 << 0 // entry is in use
 	_vtEntryDir        = 1 << 1 // a directory
 	_vtEntryDepthShift = 2      // shift for pointer depth
@@ -11,6 +13,16 @@ const (
 	_vtEntryBig        = 1 << 6 // dsize and psize are encoded differently
 	vtEntryNoArchive   = 1 << 7 // for local storage only
 )
+
+type VtEntry struct {
+	Gen   uint32
+	PSize uint16
+	DSize uint16
+	Type  venti.Type
+	Flags byte
+	Size  uint64
+	Score venti.Score
+}
 
 func VtEntryUnpack(b []byte) (*VtEntry, error) {
 	entry := new(VtEntry)
